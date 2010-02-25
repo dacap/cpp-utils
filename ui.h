@@ -391,7 +391,8 @@ namespace ui
 	wcex.hIconSm       = NULL;
 
 	if (RegisterClassEx(&wcex) == 0)
-	  throw std::exception("Cannot register win32 window class");
+	  //throw std::exception("Cannot register win32 window class");
+	  throw std::exception();
       }
     }
 

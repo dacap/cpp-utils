@@ -157,9 +157,11 @@ namespace ui
   class thread
   {
   public:
+    class details;
     class id
     {
       friend class thread;
+      friend class details;
 
       DWORD m_native_id;
       id(DWORD id) : m_native_id(id) { }

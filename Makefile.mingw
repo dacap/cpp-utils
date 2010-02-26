@@ -1,0 +1,3 @@
+all:
+	g++ -mconsole -o test test.cpp
+	g++ -mconsole -o condition_variables condition_variables.cpp

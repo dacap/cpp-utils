@@ -178,7 +178,7 @@ namespace ui
       bool operator> (const id& y) const { return m_native_id >  y.m_native_id; }
       bool operator>=(const id& y) const { return m_native_id >= y.m_native_id; }
 
-      // TODO do we should replace this with support for iostreams?
+      // TODO should we replace this with support for iostreams?
       DWORD get_native_id() { return m_native_id; }
     };
 

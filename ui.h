@@ -106,7 +106,11 @@ namespace ui
     }
 
     ~condition_variable() {
-      //notify_all();
+      // Here we could call notify_all, but, if a condition variable
+      // is destroyed, "there shall be no thread blocked on *this"
+      // (see 30.5.1 C++ working draft n3035)
+      assert(m_waiters == 0);
+
       CloseHandle(m_waiting_queue);
     }
 

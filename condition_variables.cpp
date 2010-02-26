@@ -140,5 +140,7 @@ int main()
   c2.join();
   c3.join();
 
+  // You should redirect the output of this program to see the result...
+  // Something like "condition_variables.exe > log.txt"
   return 0;
 }

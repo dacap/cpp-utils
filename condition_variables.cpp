@@ -75,6 +75,8 @@ public:
 
   void break_execution()
   {
+    lock_guard<mutex> lock(monitor);
+
     stop_flag = true;
 
     full.notify_all();

@@ -4,8 +4,13 @@
 #ifndef UI_HEADER_FILE_INCLUDED
 #define UI_HEADER_FILE_INCLUDED
 
-#include <cassert>
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0400		// From Windows 2000
+#endif
+
 #include <windows.h>
+
+#include <cassert>
 #include <string>
 #include <exception>
 

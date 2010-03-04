@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "ui.h"
+#include "gui/ui.h"
 
 using namespace ui;
 
@@ -18,7 +18,7 @@ void func2(int a, int b)
   printf("[%08x] func2(%d, %d)\n", this_thread::get_id().get_native_id(), a, b);
 }
 
-int ui_main()
+int main()
 {
   printf("[%08x] main\n", this_thread::get_id().get_native_id());
 

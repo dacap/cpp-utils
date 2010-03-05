@@ -7,8 +7,6 @@
 using namespace ui;
 using namespace std;
 
-class stopped_exception : exception { };
-
 class synchronized_queue
 {
   static const size_t MAX = 4;
@@ -17,13 +15,11 @@ class synchronized_queue
   mutex monitor;
   condition_variable full;
   condition_variable empty;
-  bool stop_flag;
 
 public:
 
   synchronized_queue()
   {
-    stop_flag = false;
   }
 
   void add(int producer_nth, int item)
@@ -31,16 +27,15 @@ public:
     lock_guard<mutex> lock(monitor);
 
     while (items.size() == MAX) {
-      cout << "> [producer " << producer_nth << "] is full" << endl;
+      cout << ">  [producer " << producer_nth << "] is full" << endl;
       full.wait(lock);
-      if (stop_flag)
-	throw stopped_exception();
-      cout << "> [producer " << producer_nth << "] now i can produce" << endl;
+      cout << ">  [producer " << producer_nth << "] now i can produce" << endl;
     }
 
     assert(items.size() < MAX);
     items.push(item);
-    cout << "[producer " << producer_nth << "] item " << setw(3) << item << " produced" << endl;
+    cout << setw(2) << items.size()
+	 << " [producer " << producer_nth << "] item " << setw(3) << item << " produced" << endl;
 
     assert(items.size() <= MAX);
 
@@ -53,11 +48,9 @@ public:
     lock_guard<mutex> lock(monitor);
 
     while (items.size() == 0) {
-      cout << "> [consumer " << consumer_nth << "] is empty" << endl;
+      cout << ">  [consumer " << consumer_nth << "] is empty" << endl;
       empty.wait(lock);
-      if (stop_flag)
-	throw stopped_exception();
-      cout << "> [consumer " << consumer_nth << "] now i can consume" << endl;
+      cout << ">  [consumer " << consumer_nth << "] now i can consume" << endl;
     }
 
     assert(items.size() <= MAX);
@@ -65,7 +58,8 @@ public:
     int res = items.front();
     items.pop();
 
-    cout << "[consumer " << consumer_nth << "] item " << setw(3) << res << " consumed" << endl;
+    cout << setw(2) << items.size()
+	 << " [consumer " << consumer_nth << "] item " << setw(3) << res << " consumed" << endl;
 
     if (items.size() == MAX-1)
       full.notify_one();
@@ -73,51 +67,38 @@ public:
     return res;
   }
 
-  void break_execution()
-  {
-    lock_guard<mutex> lock(monitor);
-
-    stop_flag = true;
-
-    full.notify_all();
-    empty.notify_all();
-  }
-
 };
 
 synchronized_queue the_queue;
+bool stop_flag = false;
 
 void producer(int producer_nth)
 {
-  try {
-    while (true) {
-      // Produce the "item"
-      int item = rand() % 256;
+  while (!stop_flag) {
+    // Produce the "item"
+    int item = rand() & 255;
+    this_thread::sleep_for(item);
 
-      // Add it to the queue
-      the_queue.add(producer_nth, item);
-    }
-  }
-  catch (stopped_exception&) {
+    // Add it to the queue
+    the_queue.add(producer_nth, item);
   }
 }
 
 void consumer(int consumer_nth)
 {
-  try {
-    while (true) {
-      // Consume the "item" from the queue
-      int item = the_queue.remove(consumer_nth);
+  while (!stop_flag) {
+    // Consume the "item" from the queue
+    int item = the_queue.remove(consumer_nth);
 
-      // Here we can use the item...
-    }
-  }
-  catch (stopped_exception&) {
+    // Here we can use the item...
+    this_thread::sleep_for(rand() & 255);
   }
 }
 
 int main()
 {
+  srand(NULL);
+
   // Create 3 producers and 3 consumers
   thread p1(&producer, 1);
   thread p2(&producer, 2);
@@ -128,9 +109,9 @@ int main()
 
   // Wait 1 second
   this_thread::sleep_for(1000);
-  the_queue.break_execution();
+  stop_flag = true;
 
-  cout << "the_queue.break_execution" << endl;
+  cout << "stop all threads" << endl;
 
   // Join everything
   p1.join();

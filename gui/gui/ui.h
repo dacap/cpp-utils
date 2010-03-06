@@ -195,7 +195,7 @@ namespace ui
     struct f_wrapper0
     {
       Callable f;
-      f_wrapper0(Callable f) : f(f) { }
+      f_wrapper0(const Callable& f) : f(f) { }
       void operator()() { f(); }
     };
 
@@ -204,7 +204,7 @@ namespace ui
     {
       Callable f;
       A a;
-      f_wrapper1(Callable f, A a) : f(f), a(a) { }
+      f_wrapper1(const Callable& f, A a) : f(f), a(a) { }
       void operator()() { f(a); }
     };
 
@@ -214,7 +214,7 @@ namespace ui
       Callable f;
       A a;
       B b;
-      f_wrapper2(Callable f, A a, B b) : f(f), a(a), b(b) { }
+      f_wrapper2(const Callable& f, A a, B b) : f(f), a(a), b(b) { }
       void operator()() { f(a, b); }
     };
 
@@ -241,7 +241,7 @@ namespace ui
 
     // Create a new thread without arguments
     template<class Callable>
-    thread(Callable f)
+    thread(const Callable& f)
     {
       m_native_handle =
 	CreateThread(NULL, 0,
@@ -253,7 +253,7 @@ namespace ui
 
     // Create a new thread with one argument
     template<class Callable, class A>
-    thread(Callable f, A a)
+    thread(const Callable& f, A a)
     {
       m_native_handle =
 	CreateThread(NULL, 0,
@@ -265,7 +265,7 @@ namespace ui
 
     // Create a new thread with two arguments
     template<class Callable, class A, class B>
-    thread(Callable f, A a, B b)
+    thread(const Callable& f, A a, B b)
     {
       m_native_handle =
 	CreateThread(NULL, 0,

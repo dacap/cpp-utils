@@ -1,7 +1,6 @@
 include_directories(.)
 
-# "test" executable is not a WIN32 (-mwindows) because it printf
-# some lines. This should not be in this way in the near future
-# (do we need some window::writeln() member function?)
-add_executable(test tests/test.cpp)
 add_executable(condition_variables tests/condition_variables.cpp)
+add_executable(launch_functions tests/launch_functions.cpp)
+add_executable(launch_member_functions tests/launch_member_functions.cpp)
+add_executable(simple_ui WIN32 tests/simple_ui.cpp)

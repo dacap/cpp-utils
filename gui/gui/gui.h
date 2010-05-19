@@ -40,7 +40,7 @@ namespace gui
     static void register_window_class()
     {
       HINSTANCE hinstance = ::GetModuleHandle(NULL);
-      LPCTSTR class_name = "ui_window_class";
+      LPCTSTR class_name = "gui_window_class";
       WNDCLASSEX wcex;
 
       if (!::GetClassInfoEx(hinstance, class_name, &wcex)) {
@@ -68,7 +68,7 @@ namespace gui
     {
       HINSTANCE hinstance = ::GetModuleHandle(NULL);
       HWND hwnd = CreateWindowEx(WS_EX_CONTROLPARENT,
-				 "ui_window_class", "",
+				 "gui_window_class", "",
 				 WS_OVERLAPPEDWINDOW,
 				 CW_USEDEFAULT, CW_USEDEFAULT,
 				 // CW_USEDEFAULT, CW_USEDEFAULT,

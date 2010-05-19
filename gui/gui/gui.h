@@ -179,6 +179,7 @@ namespace gui
     bool m_keypressed;
     bool m_closed;
     win32_bitmap m_bitmap;
+    int m_textx, m_texty;
 
     struct create_window_wrapper
     {
@@ -275,7 +276,20 @@ namespace gui
 
     void write(const std::string& text)
     {
-      TextOut(m_bitmap.hdc(), 0, 0, text.c_str(), static_cast<int>(text.size()));
+      HDC hdc = m_bitmap.hdc();
+
+      // Draw the text in the bitmap
+      TextOut(hdc, m_textx, m_texty, text.c_str(), static_cast<int>(text.size()));
+
+      // Calculate the size of the string
+      RECT rc = { 0, 0, 32000, 0 };
+      DrawText(hdc, text.c_str(), static_cast<int>(text.size()), &rc, DT_CALCRECT);
+      
+      m_textx += (rc.right - rc.left); // X = X + Text Width
+      if (m_textx > width()) {
+	m_texty += (rc.bottom - rc.top);
+	m_textx = 0;
+      }
 
       ::InvalidateRect(m_handle, NULL, FALSE);
     }

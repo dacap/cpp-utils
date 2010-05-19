@@ -1,4 +1,4 @@
-#include <gui/gui.h>
+#include <gui/thread.h>
 #include <iostream>
 
 using std::cout;

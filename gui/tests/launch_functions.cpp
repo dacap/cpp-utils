@@ -1,5 +1,5 @@
-#include <cstdio>
 #include <gui/thread.h>
+#include <cstdio>
 
 using namespace gui;
 

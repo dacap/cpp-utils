@@ -6,6 +6,7 @@ using namespace gui;
 int gui_main()
 {
   window w(256, 256);
+  w << "Hello World!";
   w.waitkey();
   return 0;
 }

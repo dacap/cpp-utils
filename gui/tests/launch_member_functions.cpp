@@ -1,8 +1,8 @@
+#include <gui/gui.h>
 #include <iostream>
-#include "gui/ui.h"
 
 using std::cout;
-using namespace ui;
+using namespace gui;
 
 class Test0
 {

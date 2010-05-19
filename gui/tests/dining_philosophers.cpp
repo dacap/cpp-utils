@@ -1,9 +1,9 @@
-#include "gui/ui.h"
+#include <gui/gui.h>
 #include <iostream>
 #include <utility>
 #include <vector>
 
-using namespace ui;
+using namespace gui;
 using namespace std;
 
 class philosopher;

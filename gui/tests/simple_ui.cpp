@@ -1,9 +1,9 @@
-#include <cstdio>
-#include "gui/ui.h"
+#include <gui/gui.h>
+#include <iostream>
 
-using namespace ui;
+using namespace gui;
 
-int ui_main()
+int gui_main()
 {
   window w(256, 256);
   w.waitkey();

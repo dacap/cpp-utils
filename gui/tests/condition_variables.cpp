@@ -1,10 +1,10 @@
-#include "gui/ui.h"
+#include <gui/thread.h>
 #include <queue>
 #include <iostream>
 #include <iomanip>
 #include <exception>
 
-using namespace ui;
+using namespace gui;
 using namespace std;
 
 class synchronized_queue

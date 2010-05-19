@@ -1,7 +1,7 @@
 #include <cstdio>
-#include "gui/ui.h"
+#include <gui/thread.h>
 
-using namespace ui;
+using namespace gui;
 
 void func0()
 {

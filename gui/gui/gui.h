@@ -229,6 +229,8 @@ namespace gui
 
     win32_window(int width, int height)
       : m_bitmap(width, height)
+      , m_textx(0)
+      , m_texty(0)
     {
       win32_details::register_window_class<win32_window>();
 

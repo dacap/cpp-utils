@@ -259,6 +259,20 @@ namespace gui
       m_keypressed = false;
     }
 
+    size_t width()
+    {
+      RECT rc;
+      ::GetWindowRect(m_handle, &rc);
+      return rc.right - rc.left;
+    }
+
+    size_t height()
+    {
+      RECT rc;
+      ::GetWindowRect(m_handle, &rc);
+      return rc.bottom - rc.top;
+    }
+
     void write(const std::string& text)
     {
       TextOut(m_bitmap.hdc(), 0, 0, text.c_str(), static_cast<int>(text.size()));
@@ -318,18 +332,34 @@ namespace gui
   class window : public non_copyable
   {
   public:
-    window(int width, int height) {
+
+    window(int width, int height)
+    {
       m_impl = new window_impl(width, height);
     }
-    ~window() {
+
+    ~window()
+    {
       delete m_impl;
     }
 
-    void waitkey() {
+    size_t width()
+    {
+      return m_impl->width();
+    }
+
+    size_t height() 
+    {
+      return m_impl->height();
+    }
+
+    void waitkey()
+    {
       m_impl->waitkey();
     }
 
-    window& operator<<(const std::string& text) {
+    window& operator<<(const std::string& text)
+    {
       m_impl->write(text);
       return *this;
     }

@@ -1,8 +1,14 @@
-#include <gui/thread.h>
+// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// Copyright (C) 2010, 2012 David Capello
+//
+// Distributed under the terms of the New BSD License,
+// see LICENSE.md for more details.
+
+#include <ui/thread.h>
 #include <iostream>
 
 using std::cout;
-using namespace gui;
+using namespace ui;
 
 class Test0
 {

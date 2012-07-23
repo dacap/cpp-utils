@@ -1,21 +1,24 @@
-// gui - Basic implementation of threads and GUI for C++          -*- C++ -*-
-// Copyright (C) 2010 David Capello
+// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// Copyright (C) 2010, 2012 David Capello
+//
+// Distributed under the terms of the New BSD License,
+// see LICENSE.md for more details.
 
-#ifndef GUI_GUI_HEADER_FILE_INCLUDED
-#define GUI_GUI_HEADER_FILE_INCLUDED
+#ifndef UI_UI_HEADER_FILE_INCLUDED
+#define UI_UI_HEADER_FILE_INCLUDED
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0400		// From Windows 2000
+#define _WIN32_WINNT 0x0400             // From Windows 2000
 #endif
 
 #include <windows.h>
 
 #include <exception>
 
-#include <gui/base.h>
-#include <gui/thread.h>
+#include <ui/base.h>
+#include <ui/thread.h>
 
-namespace gui
+namespace ui
 {
 
   namespace win32
@@ -32,9 +35,9 @@ namespace gui
     {
       WindowType* wnd = (WindowType*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       if (wnd != NULL) {
-	LRESULT result;
-	if (wnd->process_message(msg, wparam, lparam, result))
-	  return result;
+        LRESULT result;
+        if (wnd->process_message(msg, wparam, lparam, result))
+          return result;
       }
 
       return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -46,26 +49,26 @@ namespace gui
     static void register_window_class()
     {
       HINSTANCE hinstance = ::GetModuleHandle(NULL);
-      LPCTSTR class_name = "gui_window_class";
+      LPCTSTR class_name = "ui_window_class";
       WNDCLASSEX wcex;
 
       if (!::GetClassInfoEx(hinstance, class_name, &wcex)) {
-	wcex.cbSize        = sizeof(WNDCLASSEX);
-	wcex.style         = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc   = &wnd_proc<WindowType>;
-	wcex.cbClsExtra    = 0;
-	wcex.cbWndExtra    = 0;
-	wcex.hInstance     = hinstance;
-	wcex.hIcon         = (HICON)NULL;
-	wcex.hCursor       = (HCURSOR)::LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
-	wcex.lpszMenuName  = (LPCTSTR)NULL;
-	wcex.lpszClassName = class_name;
-	wcex.hIconSm       = NULL;
+        wcex.cbSize        = sizeof(WNDCLASSEX);
+        wcex.style         = CS_HREDRAW | CS_VREDRAW;
+        wcex.lpfnWndProc   = &wnd_proc<WindowType>;
+        wcex.cbClsExtra    = 0;
+        wcex.cbWndExtra    = 0;
+        wcex.hInstance     = hinstance;
+        wcex.hIcon         = (HICON)NULL;
+        wcex.hCursor       = (HCURSOR)::LoadCursor(NULL, IDC_ARROW);
+        wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
+        wcex.lpszMenuName  = (LPCTSTR)NULL;
+        wcex.lpszClassName = class_name;
+        wcex.hIconSm       = NULL;
 
-	if (RegisterClassEx(&wcex) == 0)
-	  //throw std::exception("Cannot register win32 window class");
-	  throw std::exception();
+        if (RegisterClassEx(&wcex) == 0)
+          //throw std::exception("Cannot register win32 window class");
+          throw std::exception();
       }
     }
 
@@ -74,18 +77,18 @@ namespace gui
     {
       HINSTANCE hinstance = ::GetModuleHandle(NULL);
       HWND hwnd = CreateWindowEx(WS_EX_CONTROLPARENT,
-				 "gui_window_class", "",
-				 WS_OVERLAPPEDWINDOW,
-				 CW_USEDEFAULT, CW_USEDEFAULT,
-				 // CW_USEDEFAULT, CW_USEDEFAULT,
-				 width, height,
-				 (HWND)NULL,
-				 (HMENU)NULL,
-				 hinstance,
-				 NULL);
+                                 "ui_window_class", "",
+                                 WS_OVERLAPPEDWINDOW,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 // CW_USEDEFAULT, CW_USEDEFAULT,
+                                 width, height,
+                                 (HWND)NULL,
+                                 (HMENU)NULL,
+                                 hinstance,
+                                 NULL);
       if (hwnd != NULL) {
-	// Set the pointer in the user-data field of the window (TODO: use an ATOM)
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)wnd);
+        // Set the pointer in the user-data field of the window (TODO: use an ATOM)
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)wnd);
       }
       return hwnd;
     }
@@ -112,7 +115,7 @@ namespace gui
       bhdr.biWidth = width;
       bhdr.biHeight = -height;
       bhdr.biPlanes = 1;
-      bhdr.biBitCount = 32;	// 32 bpp
+      bhdr.biBitCount = 32;     // 32 bpp
       bhdr.biCompression = BI_RGB;
       bhdr.biSizeImage = 0;
       bhdr.biXPelsPerMeter = 0;
@@ -129,24 +132,24 @@ namespace gui
 
       HDC hdc = GetDC(GetDesktopWindow());
       m_hbitmap = CreateDIBSection(hdc, &binf, DIB_RGB_COLORS,
-				  reinterpret_cast<void**>(&bits),
-				  NULL, 0);
+                                  reinterpret_cast<void**>(&bits),
+                                  NULL, 0);
 
       if (m_hbitmap == NULL)
-	throw std::exception(); // TODO throw gui_exception
+        throw std::exception(); // TODO throw ui_exception
 
       m_hdc = CreateCompatibleDC(hdc);
       SelectObject(m_hdc, m_hbitmap);
 
       // Clear the whole bitmap with a white background
       {
-	HGDIOBJ oldPen   = SelectObject(m_hdc, ::CreatePen(PS_NULL, 0, 0));
-	HGDIOBJ oldBrush = SelectObject(m_hdc, ::CreateSolidBrush(RGB(255, 255, 255)));
+        HGDIOBJ oldPen   = SelectObject(m_hdc, ::CreatePen(PS_NULL, 0, 0));
+        HGDIOBJ oldBrush = SelectObject(m_hdc, ::CreateSolidBrush(RGB(255, 255, 255)));
 
-	Rectangle(m_hdc, 0, 0, width, height);
+        Rectangle(m_hdc, 0, 0, width, height);
 
-	DeleteObject(SelectObject(m_hdc, oldPen));
-	DeleteObject(SelectObject(m_hdc, oldBrush));
+        DeleteObject(SelectObject(m_hdc, oldPen));
+        DeleteObject(SelectObject(m_hdc, oldBrush));
       }
     }
 
@@ -188,36 +191,36 @@ namespace gui
       int m_height;
 
       create_window_wrapper(win32_window* wnd, int width, int height)
-	: m_wnd(wnd)
-	, m_width(width)
-	, m_height(height)
+        : m_wnd(wnd)
+        , m_width(width)
+        , m_height(height)
       {
       }
 
       void operator()()
       {
-	m_wnd->m_handle = win32_details::create_window(m_wnd, m_width, m_height);
+        m_wnd->m_handle = win32_details::create_window(m_wnd, m_width, m_height);
 
-	MSG msg;
+        MSG msg;
 
-	
-	::ShowWindow(m_wnd->m_handle, SW_SHOWNORMAL);
-	::UpdateWindow(m_wnd->m_handle);
 
-	// Message loop while:
-	// 1) the window is not destroyed
-	// 2) the window is visible
-	// 3) the Windows message queue is still alive
-	while (!m_wnd->m_destroy &&
-	       ::IsWindowVisible(m_wnd->m_handle) &&
-	       ::GetMessage(&msg, m_wnd->m_handle, 0, 0)) {
-	  ::TranslateMessage(&msg);
-	  ::DispatchMessage(&msg);
-	}
+        ::ShowWindow(m_wnd->m_handle, SW_SHOWNORMAL);
+        ::UpdateWindow(m_wnd->m_handle);
 
-	// Destroy the window
-	::DestroyWindow(m_wnd->m_handle);
-	m_wnd->m_handle = NULL;
+        // Message loop while:
+        // 1) the window is not destroyed
+        // 2) the window is visible
+        // 3) the Windows message queue is still alive
+        while (!m_wnd->m_destroy &&
+               ::IsWindowVisible(m_wnd->m_handle) &&
+               ::GetMessage(&msg, m_wnd->m_handle, 0, 0)) {
+          ::TranslateMessage(&msg);
+          ::DispatchMessage(&msg);
+        }
+
+        // Destroy the window
+        ::DestroyWindow(m_wnd->m_handle);
+        m_wnd->m_handle = NULL;
       }
 
     };
@@ -241,15 +244,15 @@ namespace gui
 
       // TODO wait m_handle != NULL (use a notification, avoid 100% CPU wait)
       while (m_handle == NULL)
-      	;
+        ;
     }
 
     ~win32_window()
     {
       if (m_thread) {
-	m_destroy = true;
-	m_thread->join();
-	delete m_thread;
+        m_destroy = true;
+        m_thread->join();
+        delete m_thread;
       }
     }
 
@@ -257,8 +260,8 @@ namespace gui
     {
       // // do something
       while (!m_keypressed && !m_closed) // TODO avoid 100% CPU wait
-      	// wait_message();
-	;
+        // wait_message();
+        ;
       m_keypressed = false;
     }
 
@@ -286,11 +289,11 @@ namespace gui
       // Calculate the size of the string
       RECT rc = { 0, 0, 32000, 0 };
       DrawText(hdc, text.c_str(), static_cast<int>(text.size()), &rc, DT_CALCRECT);
-      
+
       m_textx += (rc.right - rc.left); // X = X + Text Width
       if (m_textx > width()) {
-	m_texty += (rc.bottom - rc.top);
-	m_textx = 0;
+        m_texty += (rc.bottom - rc.top);
+        m_textx = 0;
       }
 
       ::InvalidateRect(m_handle, NULL, FALSE);
@@ -303,35 +306,35 @@ namespace gui
     {
       switch (msg) {
 
-	case WM_KEYDOWN:
-	  m_keypressed = true;
-	  break;
+        case WM_KEYDOWN:
+          m_keypressed = true;
+          break;
 
-	case WM_CLOSE:
-	  m_closed = true;
-	  break;
+        case WM_CLOSE:
+          m_closed = true;
+          break;
 
-	case WM_PAINT:
-	  {
-	    PAINTSTRUCT ps;
-	    HDC window_hdc = ::BeginPaint(m_handle, &ps);
-	    HDC bitmap_hdc = m_bitmap.hdc();
+        case WM_PAINT:
+          {
+            PAINTSTRUCT ps;
+            HDC window_hdc = ::BeginPaint(m_handle, &ps);
+            HDC bitmap_hdc = m_bitmap.hdc();
 
-	    if (!::IsRectEmpty(&ps.rcPaint)) {
-	      BitBlt(window_hdc,
-		     ps.rcPaint.left, ps.rcPaint.top, // X, Y (dst)
-		     ps.rcPaint.right - ps.rcPaint.left, // Width
-		     ps.rcPaint.bottom - ps.rcPaint.top, // Height
-		     bitmap_hdc,
-		     ps.rcPaint.left, ps.rcPaint.top, // X, Y (src)
-		     SRCCOPY);
-	    }
+            if (!::IsRectEmpty(&ps.rcPaint)) {
+              BitBlt(window_hdc,
+                     ps.rcPaint.left, ps.rcPaint.top, // X, Y (dst)
+                     ps.rcPaint.right - ps.rcPaint.left, // Width
+                     ps.rcPaint.bottom - ps.rcPaint.top, // Height
+                     bitmap_hdc,
+                     ps.rcPaint.left, ps.rcPaint.top, // X, Y (src)
+                     SRCCOPY);
+            }
 
-	    ::EndPaint(m_handle, &ps);
+            ::EndPaint(m_handle, &ps);
 
-	    result = TRUE;
-	  }
-	  return true;
+            result = TRUE;
+          }
+          return true;
       }
       return false;
     }
@@ -364,7 +367,7 @@ namespace gui
       return m_impl->width();
     }
 
-    size_t height() 
+    size_t height()
     {
       return m_impl->height();
     }
@@ -386,10 +389,10 @@ namespace gui
 
 }
 
-#define gui_main()				\
-  WINAPI WinMain(HINSTANCE hInstance,		\
-		 HINSTANCE hPrevInstance,	\
-		 LPSTR lpCmdLine,		\
-		 int nCmdShow)			\
+#define ui_main()                               \
+  WINAPI WinMain(HINSTANCE hInstance,           \
+                 HINSTANCE hPrevInstance,       \
+                 LPSTR lpCmdLine,               \
+                 int nCmdShow)                  \
 
-#endif // GUI_GUI_HEADER_FILE_INCLUDED
+#endif // UI_UI_HEADER_FILE_INCLUDED

@@ -1,11 +1,14 @@
-// gui - Basic implementation of threads and GUI for C++          -*- C++ -*-
-// Copyright (C) 2010 David Capello
+// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// Copyright (C) 2010, 2012 David Capello
+//
+// Distributed under the terms of the New BSD License,
+// see LICENSE.md for more details.
 
-#ifndef GUI_THREAD_HEADER_FILE_INCLUDED
-#define GUI_THREAD_HEADER_FILE_INCLUDED
+#ifndef UI_THREAD_HEADER_FILE_INCLUDED
+#define UI_THREAD_HEADER_FILE_INCLUDED
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0400		// From Windows 2000
+#define _WIN32_WINNT 0x0400             // From Windows 2000
 #endif
 
 #include <windows.h>
@@ -14,9 +17,9 @@
 #include <string>
 #include <exception>
 
-#include <gui/base.h>
+#include <ui/base.h>
 
-namespace gui
+namespace ui
 {
 
   //////////////////////////////////////////////////////////////////////
@@ -85,18 +88,18 @@ namespace gui
 
   class condition_variable : public non_copyable
   {
-    mutex m_monitor;		// To avoid running two condition_variable member function at the same time
-    HANDLE m_waiting_queue;	// Queue of waiting threads
-    LONG m_waiters;		// Number of waiters in the queue
+    mutex m_monitor;            // To avoid running two condition_variable member function at the same time
+    HANDLE m_waiting_queue;     // Queue of waiting threads
+    LONG m_waiters;             // Number of waiters in the queue
 
   public:
 
     condition_variable() {
       m_waiting_queue =
-	CreateSemaphore(NULL,	 // Security attributes
-			0,	 // Initial count
-			1000,	 // Maximum number of waiters (TODO)
-			NULL); // Unnamed semaphore
+        CreateSemaphore(NULL,    // Security attributes
+                        0,       // Initial count
+                        1000,    // Maximum number of waiters (TODO)
+                        NULL); // Unnamed semaphore
       m_waiters = 0;
     }
 
@@ -111,12 +114,12 @@ namespace gui
 
     void wait(lock_guard<mutex>& external_monitor) {
       {
-	lock_guard<mutex> lock(m_monitor);
+        lock_guard<mutex> lock(m_monitor);
 
-	assert(m_waiters >= 0);
+        assert(m_waiters >= 0);
 
-	++m_waiters;
-	external_monitor.unlock();
+        ++m_waiters;
+        external_monitor.unlock();
       }
       ::WaitForSingleObject(m_waiting_queue, INFINITE);
       external_monitor.lock();
@@ -129,9 +132,9 @@ namespace gui
 
       // If there are one or more waiters...
       if (m_waiters > 0) {
-	// Increment semaphore count to unlock a waiting thread
-	ReleaseSemaphore(m_waiting_queue, 1, NULL);
-	--m_waiters;
+        // Increment semaphore count to unlock a waiting thread
+        ReleaseSemaphore(m_waiting_queue, 1, NULL);
+        --m_waiters;
       }
     }
 
@@ -142,12 +145,12 @@ namespace gui
 
       // If there are one or more waiters...
       if (m_waiters > 0) {
-	// Increment the semaphore to the number of waiting threads
-	ReleaseSemaphore(m_waiting_queue, m_waiters, NULL);
-	m_waiters = 0;
+        // Increment the semaphore to the number of waiting threads
+        ReleaseSemaphore(m_waiting_queue, m_waiters, NULL);
+        m_waiters = 0;
       }
     }
-    
+
   };
 
   //////////////////////////////////////////////////////////////////////
@@ -234,10 +237,10 @@ namespace gui
     thread(const Callable& f)
     {
       m_native_handle =
-	CreateThread(NULL, 0,
-		     thread_proxy<f_wrapper0<Callable> >,
-		     (LPVOID)new f_wrapper0<Callable>(f),
-		     CREATE_SUSPENDED, &m_id.m_native_id);
+        CreateThread(NULL, 0,
+                     thread_proxy<f_wrapper0<Callable> >,
+                     (LPVOID)new f_wrapper0<Callable>(f),
+                     CREATE_SUSPENDED, &m_id.m_native_id);
       ResumeThread(m_native_handle);
     }
 
@@ -246,10 +249,10 @@ namespace gui
     thread(const Callable& f, A a)
     {
       m_native_handle =
-	CreateThread(NULL, 0,
-		     thread_proxy<f_wrapper1<Callable, A> >,
-		     (LPVOID)new f_wrapper1<Callable, A>(f, a),
-		     CREATE_SUSPENDED, &m_id.m_native_id);
+        CreateThread(NULL, 0,
+                     thread_proxy<f_wrapper1<Callable, A> >,
+                     (LPVOID)new f_wrapper1<Callable, A>(f, a),
+                     CREATE_SUSPENDED, &m_id.m_native_id);
       ResumeThread(m_native_handle);
     }
 
@@ -258,31 +261,31 @@ namespace gui
     thread(const Callable& f, A a, B b)
     {
       m_native_handle =
-	CreateThread(NULL, 0,
-		     thread_proxy<f_wrapper2<Callable, A, B> >,
-		     (LPVOID)new f_wrapper2<Callable, A, B>(f, a, b),
-		     CREATE_SUSPENDED, &m_id.m_native_id);
+        CreateThread(NULL, 0,
+                     thread_proxy<f_wrapper2<Callable, A, B> >,
+                     (LPVOID)new f_wrapper2<Callable, A, B>(f, a, b),
+                     CREATE_SUSPENDED, &m_id.m_native_id);
       ResumeThread(m_native_handle);
     }
 
     ~thread()
     {
       if (joinable())
-	detach();
+        detach();
     }
 
     bool joinable() const
     {
-      return 
-	m_native_handle != NULL &&
-	m_id.m_native_id != ::GetCurrentThreadId();
+      return
+        m_native_handle != NULL &&
+        m_id.m_native_id != ::GetCurrentThreadId();
     }
 
     void join()
     {
       if (joinable()) {
-	::WaitForSingleObject(m_native_handle, INFINITE);
-	detach();
+        ::WaitForSingleObject(m_native_handle, INFINITE);
+        detach();
       }
     }
 
@@ -309,7 +312,7 @@ namespace gui
     public:
       static id get_current_thread_id()
       {
-	return id(::GetCurrentThreadId());
+        return id(::GetCurrentThreadId());
       }
     };
 
@@ -340,7 +343,7 @@ namespace gui
   //////////////////////////////////////////////////////////////////////
   // thread_guard class
 
-  class thread_guard 
+  class thread_guard
   {
     thread& m_thread;
   public:
@@ -348,11 +351,11 @@ namespace gui
     ~thread_guard()
     {
       if (m_thread.joinable())
-	m_thread.join();
+        m_thread.join();
     }
   };
 
 }
 
 
-#endif // GUI_THREAD_HEADER_FILE_INCLUDED
+#endif // UI_THREAD_HEADER_FILE_INCLUDED

@@ -1,13 +1,14 @@
-// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// mt - thread library to create C++ experiments         -*- C++ -*-
 // Copyright (C) 2010, 2012 David Capello
 //
 // Distributed under the terms of the New BSD License,
 // see LICENSE.md for more details.
 
-#include <ui/thread.h>
+#include "mt/thread.h"
+
 #include <cstdio>
 
-using namespace ui;
+using namespace mt;
 
 void func0()
 {
@@ -39,4 +40,3 @@ int main()
   printf("[%08x] main exit\n", this_thread::get_id().get_native_id());
   return 0;
 }
-

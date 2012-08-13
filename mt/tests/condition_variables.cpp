@@ -1,20 +1,20 @@
-// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// mt - thread library to create C++ experiments         -*- C++ -*-
 // Copyright (C) 2010, 2012 David Capello
 //
 // Distributed under the terms of the New BSD License,
 // see LICENSE.md for more details.
 
-#include <ui/thread.h>
+#include "mt/thread.h"
+
 #include <queue>
 #include <iostream>
 #include <iomanip>
 #include <exception>
 
-using namespace ui;
+using namespace mt;
 using namespace std;
 
-class synchronized_queue
-{
+class synchronized_queue {
   static const size_t MAX = 4;
 
   queue<int> items;
@@ -24,12 +24,10 @@ class synchronized_queue
 
 public:
 
-  synchronized_queue()
-  {
+  synchronized_queue() {
   }
 
-  void add(int producer_nth, int item)
-  {
+  void add(int producer_nth, int item) {
     lock_guard<mutex> lock(monitor);
 
     while (items.size() == MAX) {
@@ -41,7 +39,7 @@ public:
     assert(items.size() < MAX);
     items.push(item);
     cout << setw(2) << items.size()
-	 << " [producer " << producer_nth << "] item " << setw(3) << item << " produced" << endl;
+         << " [producer " << producer_nth << "] item " << setw(3) << item << " produced" << endl;
 
     assert(items.size() <= MAX);
 
@@ -49,8 +47,7 @@ public:
       empty.notify_one();
   }
 
-  int remove(int consumer_nth)
-  {
+  int remove(int consumer_nth) {
     lock_guard<mutex> lock(monitor);
 
     while (items.size() == 0) {
@@ -65,7 +62,7 @@ public:
     items.pop();
 
     cout << setw(2) << items.size()
-	 << " [consumer " << consumer_nth << "] item " << setw(3) << res << " consumed" << endl;
+         << " [consumer " << consumer_nth << "] item " << setw(3) << res << " consumed" << endl;
 
     if (items.size() == MAX-1)
       full.notify_one();
@@ -78,8 +75,7 @@ public:
 synchronized_queue the_queue;
 bool stop_flag = false;
 
-void producer(int producer_nth)
-{
+void producer(int producer_nth) {
   while (!stop_flag) {
     // Produce the "item"
     int item = rand() & 255;
@@ -90,8 +86,7 @@ void producer(int producer_nth)
   }
 }
 
-void consumer(int consumer_nth)
-{
+void consumer(int consumer_nth) {
   while (!stop_flag) {
     // Consume the "item" from the queue
     int item = the_queue.remove(consumer_nth);
@@ -101,8 +96,7 @@ void consumer(int consumer_nth)
   }
 }
 
-int main()
-{
+int main() {
   srand(NULL);
 
   // Create 3 producers and 3 consumers
@@ -129,5 +123,4 @@ int main()
 
   // You should redirect the output of this program to see the result...
   // Something like "condition_variables.exe > log.txt"
-  return 0;
 }

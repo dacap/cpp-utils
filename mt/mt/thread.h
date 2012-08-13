@@ -1,11 +1,11 @@
-// ui - Basic User Interface library to do experiments          -*- C++ -*-
+// mt - thread library to create C++ experiments         -*- C++ -*-
 // Copyright (C) 2010, 2012 David Capello
 //
 // Distributed under the terms of the New BSD License,
 // see LICENSE.md for more details.
 
-#ifndef UI_THREAD_HEADER_FILE_INCLUDED
-#define UI_THREAD_HEADER_FILE_INCLUDED
+#ifndef MT_THREAD_HEADER_FILE_INCLUDED
+#define MT_THREAD_HEADER_FILE_INCLUDED
 
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0400             // From Windows 2000
@@ -17,17 +17,13 @@
 #include <string>
 #include <exception>
 
-#include <ui/base.h>
-
-namespace ui
-{
+namespace mt {
 
   //////////////////////////////////////////////////////////////////////
   // lock_guard class
 
   template<class Mutex>
-  class lock_guard : public non_copyable
-  {
+  class lock_guard {
   public:
     typedef Mutex mutex_type;
 
@@ -50,17 +46,16 @@ namespace ui
   private:
     mutex_type& m_mutex;
 
+    // Non-copyable
+    lock_guard(const lock_guard&);
+    lock_guard& operator=(const lock_guard&);
   };
 
   //////////////////////////////////////////////////////////////////////
   // mutex class
 
-  class mutex : public non_copyable
-  {
-    CRITICAL_SECTION m_cs;
-
+  class mutex {
   public:
-
     mutex() {
       InitializeCriticalSection(&m_cs);
     }
@@ -81,19 +76,19 @@ namespace ui
       LeaveCriticalSection(&m_cs);
     }
 
+  private:
+    CRITICAL_SECTION m_cs;
+
+    // Non-copyable
+    mutex(const mutex&);
+    mutex& operator=(const mutex&);
   };
 
   //////////////////////////////////////////////////////////////////////
   // condition_variable class
 
-  class condition_variable : public non_copyable
-  {
-    mutex m_monitor;            // To avoid running two condition_variable member function at the same time
-    HANDLE m_waiting_queue;     // Queue of waiting threads
-    LONG m_waiters;             // Number of waiters in the queue
-
+  class condition_variable {
   public:
-
     condition_variable() {
       m_waiting_queue =
         CreateSemaphore(NULL,    // Security attributes
@@ -151,17 +146,23 @@ namespace ui
       }
     }
 
+  private:
+    mutex m_monitor;            // To avoid running two condition_variable member function at the same time
+    HANDLE m_waiting_queue;     // Queue of waiting threads
+    LONG m_waiters;             // Number of waiters in the queue
+
+    // Non-copyable
+    condition_variable(const condition_variable&);
+    condition_variable& operator=(const condition_variable&);
   };
 
   //////////////////////////////////////////////////////////////////////
   // ultra-simplistic thread class implementation based on C++0x
 
-  class thread
-  {
+  class thread {
   public:
     class details;
-    class id
-    {
+    class id {
       friend class thread;
       friend class details;
 
@@ -185,16 +186,14 @@ namespace ui
   private:
 
     template<class Callable>
-    struct f_wrapper0
-    {
+    struct f_wrapper0 {
       Callable f;
       f_wrapper0(const Callable& f) : f(f) { }
       void operator()() { f(); }
     };
 
     template<class Callable, class A>
-    struct f_wrapper1
-    {
+    struct f_wrapper1 {
       Callable f;
       A a;
       f_wrapper1(const Callable& f, A a) : f(f), a(a) { }
@@ -202,8 +201,7 @@ namespace ui
     };
 
     template<class Callable, class A, class B>
-    struct f_wrapper2
-    {
+    struct f_wrapper2 {
       Callable f;
       A a;
       B b;
@@ -212,8 +210,7 @@ namespace ui
     };
 
     template<class T>
-    static DWORD WINAPI thread_proxy(LPVOID data)
-    {
+    static DWORD WINAPI thread_proxy(LPVOID data) {
       T* t = (T*)data;
       (*t)();
       delete t;
@@ -228,14 +225,12 @@ namespace ui
     // Create an instance to represent the current thread
     thread()
       : m_native_handle(NULL)
-      , m_id()
-    {
+      , m_id() {
     }
 
     // Create a new thread without arguments
     template<class Callable>
-    thread(const Callable& f)
-    {
+    thread(const Callable& f) {
       m_native_handle =
         CreateThread(NULL, 0,
                      thread_proxy<f_wrapper0<Callable> >,
@@ -246,8 +241,7 @@ namespace ui
 
     // Create a new thread with one argument
     template<class Callable, class A>
-    thread(const Callable& f, A a)
-    {
+    thread(const Callable& f, A a) {
       m_native_handle =
         CreateThread(NULL, 0,
                      thread_proxy<f_wrapper1<Callable, A> >,
@@ -258,8 +252,7 @@ namespace ui
 
     // Create a new thread with two arguments
     template<class Callable, class A, class B>
-    thread(const Callable& f, A a, B b)
-    {
+    thread(const Callable& f, A a, B b) {
       m_native_handle =
         CreateThread(NULL, 0,
                      thread_proxy<f_wrapper2<Callable, A, B> >,
@@ -268,50 +261,42 @@ namespace ui
       ResumeThread(m_native_handle);
     }
 
-    ~thread()
-    {
+    ~thread() {
       if (joinable())
         detach();
     }
 
-    bool joinable() const
-    {
+    bool joinable() const {
       return
         m_native_handle != NULL &&
         m_id.m_native_id != ::GetCurrentThreadId();
     }
 
-    void join()
-    {
+    void join() {
       if (joinable()) {
         ::WaitForSingleObject(m_native_handle, INFINITE);
         detach();
       }
     }
 
-    void detach()
-    {
+    void detach() {
       ::CloseHandle(m_native_handle);
 
       m_native_handle = NULL;
       m_id = id();
     }
 
-    id get_id() const
-    {
+    id get_id() const {
       return m_id;
     }
 
-    native_handle_type native_handle()
-    {
+    native_handle_type native_handle() {
       return m_native_handle;
     }
 
-    class details
-    {
+    class details {
     public:
-      static id get_current_thread_id()
-      {
+      static id get_current_thread_id() {
         return id(::GetCurrentThreadId());
       }
     };
@@ -321,41 +306,37 @@ namespace ui
   //////////////////////////////////////////////////////////////////////
   // this_thread namespace
 
-  namespace this_thread
-  {
-    inline thread::id get_id()
-    {
+  namespace this_thread {
+
+    inline thread::id get_id() {
       return thread::details::get_current_thread_id();
     }
 
-    inline void yield()
-    {
+    inline void yield() {
       ::Sleep(0);
     }
 
     // Simplified API (here we do not implement duration/time_point C++0x classes
-    inline void sleep_for(int milliseconds)
-    {
+    inline void sleep_for(int milliseconds) {
       ::Sleep(milliseconds);
     }
-  }
+
+  } // namespace this_thread
 
   //////////////////////////////////////////////////////////////////////
   // thread_guard class
 
-  class thread_guard
-  {
-    thread& m_thread;
+  class thread_guard {
   public:
     explicit thread_guard(thread& t) : m_thread(t) { }
-    ~thread_guard()
-    {
+    ~thread_guard() {
       if (m_thread.joinable())
         m_thread.join();
     }
+  private:
+    thread& m_thread;
   };
 
-}
+} // namespace mt
 
-
-#endif // UI_THREAD_HEADER_FILE_INCLUDED
+#endif // MT_THREAD_HEADER_FILE_INCLUDED
